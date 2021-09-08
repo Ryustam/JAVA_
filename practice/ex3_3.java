@@ -1,30 +1,34 @@
 package practice;
 
-class dog{
+class student1{
 	private String name;
-	private int age;
+	private int code;
 	private String gender;
 	
-	dog(String name, int age, String gender){
+	student1(String name, int code, String gender){
 		this.name=name;
-		this.age=age;
+		this.code=code;
 		this.gender=gender;
 	}
 	
+	public void setCode(int code) {
+		this.code=code;
+	}
+	
 	public void showInfo() {
-		System.out.printf("이름: %s, 나이: %d, 성별: %s",this.name,this.age,this.gender);
+		System.out.printf("이름: %s, 학번: %d, 성별: %s\n",this.name,this.code,this.gender);
 	}
 	
 }
 
 
-public class ex3_3 {
+public class ex4_3 {
 
 	public static void main(String[] args) {
 		
-		dog s1 = new dog("멍멍이",9,"수컷");
+		student1 s1 = new student1("이동준",2009038033,"남");
 		s1.showInfo();
-
+		
 	}
 
 }

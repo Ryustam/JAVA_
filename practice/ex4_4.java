@@ -1,18 +1,16 @@
 package practice;
 
-public class ex4_4 {
+import java.util.Scanner;
+
+public class ex3_4 {
 
 	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
 		
-		int sum=0;
+		int sec=sc.nextInt();
 		
-		for(int i=1;i<=100;i++) {
-			if(i%3==0) {
-				sum+=i;
-			}
-		}
-		System.out.println(sum);
-
+		System.out.printf("%dmin %dsec",sec/60,sec%60);
+		sc.close();
 	}
 
 }
