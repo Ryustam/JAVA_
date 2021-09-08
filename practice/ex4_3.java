@@ -18,7 +18,7 @@ class dog{
 }
 
 
-public class ex3_3 {
+public class ex4_3 {
 
 	public static void main(String[] args) {
 		

@@ -22,7 +22,7 @@ class student1{
 }
 
 
-public class ex4_3 {
+public class ex3_3 {
 
 	public static void main(String[] args) {
 		

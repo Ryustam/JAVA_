@@ -1,6 +1,6 @@
 package practice;
 
-public class ex4_4 {
+public class ex3_4 {
 
 	public static void main(String[] args) {
 		
