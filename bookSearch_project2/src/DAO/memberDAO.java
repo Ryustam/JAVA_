@@ -8,8 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-
+import DTO.login;
 import DTO.memberVO;
+import DTO.rentDate;
 
 public class memberDAO {
 	private ArrayList<memberVO> dtos;
@@ -17,6 +18,8 @@ public class memberDAO {
 	private ArrayList<memberVO> dtosID;
 	private ArrayList<memberVO> dtosRent;
 	private ArrayList<memberVO> dtosReturn;
+	private ArrayList<login> dtoslogin;
+	private ArrayList<rentDate> dtosRentDate;
 	private Connection con;
 	private Statement st;
 	private PreparedStatement pstmt;
@@ -73,8 +76,6 @@ public class memberDAO {
 			pstmt=con.prepareStatement(SQL);
 			pstmt.setString(1,"%"+input+"%");
 			pstmt.setString(2,"%"+input+"%");
-			//pstmt.setString(2,"%"+input+"%");
-			//pstmt.executeUpdate();
 			rs = pstmt.executeQuery();
 			while(rs.next()) {	
 				String BookName = rs.getString("BookName");
@@ -244,6 +245,113 @@ public class memberDAO {
 		}
 		return count;
 	}
+	public int countUserBook() {
+		String SQL="select count(*) from rentdata";
+		int count=0;
+		try {
+			rs=st.executeQuery(SQL);
+			while(rs.next()) {	
+				count=rs.getInt("count(*)");	
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
+	
+	public ArrayList<login> login(String ID) {
+		dtoslogin = new ArrayList<login>();
+		String PW=null;
+		String SQL="select PW from login where ID=?";
+		
+		try {
+			pstmt=con.prepareStatement(SQL);
+			pstmt.setString(1,ID); // 1번 물음표에 정수 no를 넣겠다.
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {	
+				PW=rs.getString("PW");	
+				login VO=new login(ID,PW);
+				dtoslogin.add(VO);
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return dtoslogin;
+	}
+	
+	public void saveDate(String name,String bookName,int ID ,String rentday, String returnday) {
+		String SQL="insert into rentdata values(?,?,?,?,?)";
+		
+		try {
+			pstmt=con.prepareStatement(SQL);
+			pstmt.setString(1, name);
+			pstmt.setString(2, bookName);
+			pstmt.setInt(3, ID);
+			pstmt.setString(4, rentday);
+			pstmt.setString(5, returnday);
+			pstmt.executeUpdate();
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}	
+	}
+	
+	public void delete_saveDate(int ID) {
+		String SQL="delete from rentdata where ID=?";
+		
+		try {
+			pstmt=con.prepareStatement(SQL);
+			pstmt.setInt(1,ID); 
+			pstmt.executeUpdate();
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}	
+	}
+	
+	public int checkBook(String name, int ID) {
+		int count=0;
+		String SQL = "select count(*) from rentdata where name=? and ID=?";
+		
+		try {
+			pstmt=con.prepareStatement(SQL);
+			pstmt.setString(1, name);
+			pstmt.setInt(2, ID);
+			rs = pstmt.executeQuery();
+			while(rs.next()) {	
+				count = rs.getInt("count(*)");
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}	
+		return count;
+	}
+	
+	public ArrayList<rentDate> getList(String name) {
+		dtosRentDate= new ArrayList<rentDate>();
+		
+		String SQL="select name,ID,BookName,rentDay,returnDay from rentdata where name=?";
+		try {
+			pstmt=con.prepareStatement(SQL);
+			pstmt.setString(1, name); 
+			rs = pstmt.executeQuery();
+			while(rs.next()) {	
+				String userName =rs.getString("name");
+				int ID = rs.getInt("ID");
+				String BookName = rs.getString("BookName");
+				String rentDay = rs.getString("rentDay");
+				String returnDay = rs.getString("returnDay");
+				rentDate VO=new rentDate(userName,ID,BookName,rentDay,returnDay);
+				dtosRentDate.add(VO);
+			}
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}	
+		return dtosRentDate;
+	}
+	
 	
 	
 }

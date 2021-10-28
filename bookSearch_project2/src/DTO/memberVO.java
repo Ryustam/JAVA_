@@ -12,16 +12,9 @@ public class memberVO {
 	private int CheckOutNum;
 	private String isCheckOut;
 	
-	public memberVO(String BookName,
-			 String Author,
-			 String Publisher,
-			 String PublishingYear,
-			 int Page,
-			 String LibraryName,
-			 int ID,
-			 String StorePlace,
-			 int CheckOutNum,
-			 String isCheckOut) {
+	public memberVO(String BookName,String Author,String Publisher,
+			 String PublishingYear,int Page,String LibraryName,
+			 int ID,String StorePlace,int CheckOutNum,String isCheckOut) {
 		this.BookName=BookName;
 		this.Author=Author;
 		this.Publisher=Publisher;
@@ -44,7 +37,6 @@ public class memberVO {
 		this.CheckOutNum=CheckOutNum;
 		this.isCheckOut=isCheckOut;
 	}
-	
 	
 	
 	public String getBookName() {

@@ -11,6 +11,8 @@ import java.util.Scanner;
 
 import javax.swing.*;
 
+import DTO.rentDate;
+import DTO.login;
 import DTO.memberVO;
 import service.memberService;
 
@@ -19,7 +21,11 @@ public class HomeController {
 	protected ArrayList<memberVO> dtosSearch;
 	protected ArrayList<memberVO> dtosRent;
 	protected ArrayList<memberVO> dtosReturn;
-	protected JCheckBox checkBox1;
+	protected ArrayList<login> dtoslogin;
+	protected ArrayList<rentDate> dtosRentDate;
+	protected JScrollPane scrollpane;
+	protected boolean success=false;
+	protected JTable table;
 	
 	public static void main(String[] args) {
 		
@@ -30,22 +36,142 @@ public class HomeController {
 		ArrayList<memberVO> dtosRent;
 		memberService service = new memberService();
 		Scanner sc = new Scanner(System.in);
-		LocalDate todaysDate = LocalDate.now();
-		Calendar cal = Calendar.getInstance();
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		
+		//JFrame 설정
 		
 				
-		Dimension dim = new Dimension(1000,500);
+		Dimension dim = new Dimension(1200,500);
 		JButton Allmember,searchBook,rentBook,returnBook;
 		
 		JFrame frame = new JFrame("도서통합시스템");
 		frame.setLocation(500,500);
 		frame.setPreferredSize(dim);
 		
+		
+		//로그인 부분
+	
+		LocalDate todaysDate = LocalDate.now();
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		String today=format.format(cal.getTime());
+		cal.add(Calendar.DAY_OF_MONTH,+7);
+		
+		boolean success=false;
+		
+		JPanel p2 = new JPanel();
+		JLabel ID =new JLabel("ID : ");
+		JLabel PW = new JLabel("PassWord : ");
+		JTextField txtID = new JTextField(10);      // 여기서 숫자 10은 칸수를 의미한다.  
+		JPasswordField txtPW = new JPasswordField(10);  
+		
+		
+		// 사용자 대출정보
+		String userHeader[]= {"책이름","대출일","반납일"};
+		String userCountents[][] =new String[service.countBook()][3];
+		JTable userTable = new JTable(userCountents,userHeader);
+		userTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		userTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+		userTable.getColumnModel().getColumn(1).setPreferredWidth(75);
+		userTable.getColumnModel().getColumn(2).setPreferredWidth(75);
+		JScrollPane userScrollpane = new JScrollPane(userTable);
+		userScrollpane.setPreferredSize(new Dimension(320,50));
+		
+		
+		JButton logBtn = new JButton("Log in");
+		logBtn.addActionListener( new ActionListener() {
+		     public void actionPerformed(ActionEvent e) {
+
+		        t1.dtoslogin=service.login(txtID.getText());
+		        String input_ID=txtID.getText();
+		        String input_PW=txtPW.getText();
+		        
+		        if(t1.dtoslogin.size()==0) {
+		        	JOptionPane.showMessageDialog(null, "없는 아이디입니다.", "Message",JOptionPane.ERROR_MESSAGE);
+		        }
+		        
+		        for(int i=0;i<t1.dtoslogin.size();i++) {
+		        	if(t1.dtoslogin.get(i).getID().equals(input_ID)) {
+		        		if(t1.dtoslogin.get(i).getPW().equals(input_PW)) {
+		        			JOptionPane.showMessageDialog(null, "로그인 성공!", "Message",JOptionPane.INFORMATION_MESSAGE);
+		        			t1.success=true;
+		     
+		        		}else {
+		        			JOptionPane.showMessageDialog(null, "비밀번호가 틀렸습니다.", "Message",JOptionPane.ERROR_MESSAGE);
+		        			
+		        		}	
+		        	}
+		        }
+		     }
+		});
+		
+		JButton logOutBtn = new JButton("Log out");
+		logOutBtn.addActionListener( new ActionListener() {
+		     public void actionPerformed(ActionEvent e) {
+		    	 txtID.setText(null);
+		    	 txtPW.setText(null);
+		    	 if(t1.dtosRentDate !=null) {
+		    		 for(int i=0;i<t1.dtosRentDate.size();i++) {
+		    			userCountents[i][0]=null;
+		    			userCountents[i][1]=null;
+		    			userCountents[i][2]=null;	
+		    		 }
+		    	 } else {
+		    		 
+		    	 }
+		    	 frame.repaint();
+		    	 userTable.setVisible(false);
+		    	 
+		    	 t1.success=false;
+		     }
+		});
+		
+		JButton showRentBtn = new JButton("대출중인 책");
+		showRentBtn.addActionListener( new ActionListener() {
+		     public void actionPerformed(ActionEvent e) {
+		    	 int i=0,j=0;
+		    	 t1.dtosRentDate=service.getList(txtID.getText());
+		    	 
+		    	if(t1.dtosRentDate.size()==0) {
+		    		JOptionPane.showMessageDialog(null, "빌린 책이 없습니다.", "Message",JOptionPane.ERROR_MESSAGE);
+		    		frame.repaint();
+		    		userTable.setVisible(false);
+		    	}else {
+		    		if(t1.success==true) {
+			    		for(j=0;j<t1.dtosRentDate.size();j++) {
+			    			userCountents[j][0]=t1.dtosRentDate.get(j).getbookName();
+			    			userCountents[j][1]=t1.dtosRentDate.get(j).getRentDay();
+			    			userCountents[j][2]=t1.dtosRentDate.get(j).getReturnDay();	
+			    		}
+			    		for(i=t1.dtosRentDate.size();i<service.countBook();i++) {
+			    			userCountents[i][0]="";
+			    			userCountents[i][1]="";
+			    			userCountents[i][2]="";
+							
+						}
+			    		frame.repaint();
+				 		userTable.setVisible(true);	
+			    	}
+		    	}
+		    	
+		     }
+		});
+		
+		
+		
+		//책 부분
 		String header[]= {"책이름","저자","출판사","출판일","페이지수","도서관","ID","분류","대출횟수","대출여부"};
 		String contents[][] = new String[service.countBook()][10];
 		int i;
+		
+		
+		JTable table = new JTable(contents, header);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		table.getColumnModel().getColumn(0).setPreferredWidth(170);
+		JScrollPane scrollpane = new JScrollPane(table);
+		JPanel p = new JPanel();
+		
+		
+		
 		t1.dtos=service.getAllMembers();
 		for(i=0;i<t1.dtos.size();i++) {
 			contents[i][0]=t1.dtos.get(i).getBookName();
@@ -60,10 +186,9 @@ public class HomeController {
 			contents[i][9]=t1.dtos.get(i).getisCheckOut();	
 		}
 		
-		JTable table = new JTable(contents, header);
-		JScrollPane scrollpane = new JScrollPane(table);
-		JPanel p = new JPanel();
-		Allmember=new JButton("모든 책");
+		
+		Allmember=new JButton("모든 책(갱신)");
+		Allmember.setPreferredSize(new Dimension(120, 30));
 		Allmember.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -85,7 +210,8 @@ public class HomeController {
 				table.setVisible(true);
 			}
 		});
-		searchBook = new JButton("책찾기(이름,저자");
+		searchBook = new JButton("책찾기(이름,저자)");
+		searchBook.setPreferredSize(new Dimension(150, 30));
 		searchBook.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -122,119 +248,73 @@ public class HomeController {
 			}
 		});
 		rentBook= new JButton("책 대여");
+		rentBook.setPreferredSize(new Dimension(80, 30));
 		rentBook.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
 				int a=table.getSelectedRow();
-				if(t1.dtos.get(a).getisCheckOut().equals("false")) {
-					service.rentBook(t1.dtos.get(a).getID(),t1.dtos.get(a).getCheckOutNum()+1);
+				if(t1.dtos.get(a).getisCheckOut().equals("false") && t1.success==true) {
+					service.rentBook(t1.dtos.get(a).getID(),t1.dtos.get(a).getCheckOutNum()+1,t1.dtoslogin.get(0).getID(),t1.dtos.get(a).getBookName(),today,format.format(cal.getTime()));
+					
 					JOptionPane.showMessageDialog(null, "대여 완료", "Message",JOptionPane.INFORMATION_MESSAGE);
 				}else {
 					JOptionPane.showMessageDialog(null, "대여 불가능", "Message",JOptionPane.WARNING_MESSAGE);
 				}
-				frame.revalidate();
+				frame.repaint();
 				table.setVisible(true);
-				/*
-				String input1 = JOptionPane.showInputDialog("책제목를 입력하세요");
-				if(input1.equals(null)==false) {
-					t1.dtosRent=service.rentBookSearch(input1);
-					//rentConfirm(t1.dtosRent)
-					//t1.checkBox1=new JCheckBox("");
-					int result =JOptionPane.showConfirmDialog(null,rentConfirm(t1.dtosRent), "책 대출", JOptionPane.YES_NO_OPTION);
-					if(result == JOptionPane.CLOSED_OPTION)	{
-					
-					}
-					else if(result == JOptionPane.YES_OPTION) {
-						int i;
-						for(i=0;i<t1.dtosRent.size();i++) {
-							if(t1.dtosRent.get(i).getisCheckOut()=="가능") {
-								service.rentBook(t1.dtosRent.get(i).getBookName(),t1.dtosRent.get(i).getCheckOutNum()+1);
-							}
-						}
-					}else {
-						
-					}
-				}
-				*/
+				
 				
 			}
 		});
 		
 		returnBook = new JButton("책 반납");
+		returnBook.setPreferredSize(new Dimension(80, 30));
 		returnBook.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
 				int a=table.getSelectedRow();
 				
-				if(t1.dtos.get(a).getisCheckOut().equals("true")) {
+				if(t1.dtos.get(a).getisCheckOut().equals("true") && t1.success==true) {
+					if(service.checkBook(txtID.getText(),t1.dtos.get(a).getID())) {
 					service.returnBook(t1.dtos.get(a).getID());
-					
 					JOptionPane.showMessageDialog(null, "반납 완료", "Message",JOptionPane.INFORMATION_MESSAGE);
-				}else {
+					}else {
+					JOptionPane.showMessageDialog(null, "사용자가 빌린 책이 아닙니다.", "Message",JOptionPane.WARNING_MESSAGE);
+					}
+				} else {
 					JOptionPane.showMessageDialog(null, "반납 불가능", "Message",JOptionPane.WARNING_MESSAGE);
 				}
-				
-				frame.revalidate();
+				frame.repaint();
 				table.setVisible(true);
-				/*
-				String input1 = JOptionPane.showInputDialog("책제목를 입력하세요");
-				
-				t1.dtosReturn=service.rentBookSearch(input1);
-				
-				int result =JOptionPane.showConfirmDialog(null,returnConfirm(t1.dtosReturn), "책 반납", JOptionPane.YES_NO_OPTION);
-				if(result == JOptionPane.CLOSED_OPTION)	{
-					
-				}
-				else if(result == JOptionPane.YES_OPTION) {
-					int i;
-					for(i=0;i<t1.dtosReturn.size();i++) {
-						if(t1.dtosReturn.get(i).getisCheckOut()=="불가능") {
-							service.returnBook(t1.dtosReturn.get(i).getBookName());
-						}
-					}
-				}else {
-					
-				}
-				
-				*/
 				
 			}
 		});
+		
+		p2.add(ID);
+		p2.add(txtID);
+		p2.add(PW);
+		p2.add(txtPW);
+		p2.add(logBtn);
+		p2.add(logOutBtn);
+		p2.add(showRentBtn);
 		p.add(Allmember);
 		p.add(searchBook);
 		p.add(rentBook);
 		p.add(returnBook);
-		frame.add(scrollpane,BorderLayout.NORTH);
+	
+		frame.add(p2,BorderLayout.NORTH);
+		frame.add(scrollpane,BorderLayout.CENTER);
+		frame.add(userScrollpane,BorderLayout.WEST);
+		scrollpane.setVisible(true);
+		userTable.setVisible(false);
+		userScrollpane.setVisible(true);
 		frame.add(p,BorderLayout.SOUTH);
 		frame.pack();
 		frame.setVisible(true);
 	}
 	
-	public static String rentConfirm(ArrayList<memberVO> dtosRent) {
-		int i;
-		String BookName = null;
-		String rentable = null;
-		for(i=0;i<dtosRent.size();i++) {
-			BookName=dtosRent.get(i).getBookName();
-			rentable=dtosRent.get(i).getisCheckOut();
-		}
-		String a= "책이름:"+BookName+"\n"+"대출가능:"+rentable;
-		return a;
-	}
-	public static String returnConfirm(ArrayList<memberVO> dtosReturn) {
-		int i;
-		String BookName = null;
-		String a=null;
-		for(i=0;i<dtosReturn.size();i++) {
-			if(dtosReturn.get(i).getisCheckOut().equals("불가능"))
-			BookName=dtosReturn.get(i).getBookName();
-			a="책이름:"+BookName+"\n";
-		}
-		
-		return a;
-	}
 }
 
 
